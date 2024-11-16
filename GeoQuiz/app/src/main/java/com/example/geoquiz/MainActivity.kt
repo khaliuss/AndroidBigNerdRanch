@@ -3,11 +3,11 @@ package com.example.geoquiz
 
 import android.os.Bundle
 import android.view.View
-import android.view.View.OnClickListener
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView.OnCloseListener
+
+//Git Challenges branch
 
 class MainActivity : AppCompatActivity() {
 
