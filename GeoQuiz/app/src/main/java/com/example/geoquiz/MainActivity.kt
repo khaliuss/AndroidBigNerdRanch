@@ -2,12 +2,14 @@ package com.example.geoquiz
 
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 //Git Challenges branch
+//first challenge show toast notification on top
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,7 +25,9 @@ class MainActivity : AppCompatActivity() {
 
 
         trueButton.setOnClickListener {
-            Toast.makeText(this, R.string.correct_toast, Toast.LENGTH_SHORT).show()
+            val toast = Toast.makeText(this, R.string.correct_toast, Toast.LENGTH_SHORT)
+            toast.setGravity(Gravity.TOP,0,0)
+            toast.show()
         }
 
         falseButton.setOnClickListener { view: View ->
