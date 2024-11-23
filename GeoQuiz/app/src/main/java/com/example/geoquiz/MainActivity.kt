@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView.OnCloseListener
 
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var  trueButton: Button
