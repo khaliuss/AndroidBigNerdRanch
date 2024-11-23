@@ -4,6 +4,7 @@ package com.example.geoquiz
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -12,13 +13,14 @@ import androidx.appcompat.app.AppCompatActivity
 //First challenge show toast notification on top
 //Second challenge add listener to TextView
 //Third challenge add back button
+//Forth challenge change button to imageButton
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var  trueButton: Button
     private lateinit var falseButton: Button
-    private lateinit var nextButton: Button
-    private lateinit var prevButton: Button
+    private lateinit var nextButton: ImageButton
+    private lateinit var prevButton: ImageButton
     private lateinit var questionTextView: TextView
 
     private val questionBank = listOf(
