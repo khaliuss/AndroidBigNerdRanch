@@ -1,19 +1,22 @@
 package com.example.geoquiz
 
 
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
 //Git Challenges branch
 //First challenge show toast notification on top
 //Second challenge add listener to TextView
 //Third challenge add back button
-//Forth challenge change button to imageButton
+//Fourth challenge change button to imageButton
+//Fifth challenge preventing repeat answers
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,12 +27,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var questionTextView: TextView
 
     private val questionBank = listOf(
-        Question(R.string.question_australia,true),
-        Question(R.string.question_oceans,true),
-        Question(R.string.question_mideast,false),
-        Question(R.string.question_africa,false),
-        Question(R.string.question_america,true),
-        Question(R.string.question_asia,true))
+        Question(R.string.question_australia,true,false),
+        Question(R.string.question_oceans,true,false),
+        Question(R.string.question_mideast,false,false),
+        Question(R.string.question_africa,false,false),
+        Question(R.string.question_america,true,false),
+        Question(R.string.question_asia,true,false))
 
     private var currentIndex = 0
 
@@ -48,20 +51,28 @@ class MainActivity : AppCompatActivity() {
 
         trueButton.setOnClickListener {
 
-            val toast = Toast.makeText(this, R.string.correct_toast, Toast.LENGTH_SHORT)
-            toast.setGravity(Gravity.TOP, 0, 0)
-            toast.show()
+            if(!questionBank[currentIndex].isAnswered){
+                checkAnswer(true)
+            }
 
-            checkAnswer(true)
+            isAnswered(questionBank[currentIndex].isAnswered)
+
 
         }
 
         falseButton.setOnClickListener {
-            checkAnswer(false)
+            if(!questionBank[currentIndex].isAnswered){
+                checkAnswer(false)
+            }
+
+            isAnswered(questionBank[currentIndex].isAnswered)
+
+
         }
 
         nextButton.setOnClickListener {
             currentIndex = (currentIndex+1) % questionBank.size
+            isAnswered(questionBank[currentIndex].isAnswered)
             updateQuestion()
         }
         prevButton.setOnClickListener {
@@ -70,6 +81,7 @@ class MainActivity : AppCompatActivity() {
             }else{
                 currentIndex-1
             }
+            isAnswered(questionBank[currentIndex].isAnswered)
             updateQuestion()
         }
 
@@ -87,8 +99,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAnswer(userAnswer:Boolean){
+        questionBank[currentIndex].isAnswered=true
         val correctAnswer = questionBank[currentIndex].answer
-
         val messageResId = if (userAnswer == correctAnswer){
             R.string.correct_toast
         }else{
@@ -97,5 +109,22 @@ class MainActivity : AppCompatActivity() {
 
         Toast.makeText(this,messageResId,Toast.LENGTH_SHORT).show()
 
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun isAnswered(isAnswered:Boolean){
+        if (isAnswered){
+            falseButton.isClickable = false
+            trueButton.isClickable = false
+
+            falseButton.setBackgroundColor(getColor(R.color.grey))
+            trueButton.setBackgroundColor(getColor(R.color.grey))
+        }else{
+            falseButton.isClickable = true
+            trueButton.isClickable = true
+
+            falseButton.setBackgroundColor(getColor(com.google.android.material.R.color.design_default_color_primary))
+            trueButton.setBackgroundColor(getColor(com.google.android.material.R.color.design_default_color_primary))
+        }
     }
 }
