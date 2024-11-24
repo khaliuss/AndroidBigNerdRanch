@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 //Third challenge add back button
 //Fourth challenge change button to imageButton
 //Fifth challenge preventing repeat answers
+//sixth challenge graded quiz
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,9 +36,12 @@ class MainActivity : AppCompatActivity() {
         Question(R.string.question_asia,true,false))
 
     private var currentIndex = 0
+    private var answered = 0
+    private var correct = 0
 
 
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -94,21 +98,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateQuestion(){
-        val questionTextResId = questionBank[currentIndex].textResId
-        questionTextView.setText(questionTextResId)
+        if (answered == questionBank.size){
+            val percent = correct/questionBank.size.toDouble() * 100
+            val end = Toast.makeText(this,"Right percent: ${percent.toInt()}% $correct",Toast.LENGTH_LONG)
+                end.setGravity(Gravity.TOP,0,0)
+                end.show()
+
+        }else{
+            val questionTextResId = questionBank[currentIndex].textResId
+            questionTextView.setText(questionTextResId)
+        }
+
     }
 
     private fun checkAnswer(userAnswer:Boolean){
+        ++answered
         questionBank[currentIndex].isAnswered=true
         val correctAnswer = questionBank[currentIndex].answer
-        val messageResId = if (userAnswer == correctAnswer){
-            R.string.correct_toast
+        var messageResId =0
+
+        if (userAnswer == correctAnswer){
+            messageResId = R.string.correct_toast
+            correct++
         }else{
-            R.string.incorrect_toast
+            messageResId = R.string.incorrect_toast
         }
 
         Toast.makeText(this,messageResId,Toast.LENGTH_SHORT).show()
 
+        updateQuestion()
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -127,4 +145,6 @@ class MainActivity : AppCompatActivity() {
             trueButton.setBackgroundColor(getColor(com.google.android.material.R.color.design_default_color_primary))
         }
     }
+
+
 }
