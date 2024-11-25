@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 
 private const val TAG = "MainActivity"
+private const val KEY_INDEX = "index"
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG,"OnCreate() called")
         setContentView(R.layout.activity_main)
+        val currentIndex = savedInstanceState?.getInt(KEY_INDEX,0) ?: 0
+        quizViewModel.currentIndex = currentIndex
 
 
 
@@ -58,6 +61,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateQuestion()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(TAG,"onSaveInstantState")
+        outState.putInt(KEY_INDEX,quizViewModel.currentIndex)
     }
 
     override fun onStart() {
