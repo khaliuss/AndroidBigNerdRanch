@@ -20,7 +20,7 @@ class QuizViewModel : ViewModel() {
 
 
     var currentIndex = 0
-    var isCheated = false
+
 
     private val questionBank = listOf(
         Question(R.string.question_australia,true),
@@ -44,6 +44,10 @@ class QuizViewModel : ViewModel() {
         set(value) {
             questionBank[currentIndex].isAnswered=value
         }
+
+    var isCheated :Boolean
+        get() = questionBank[currentIndex].isCheater
+        set(value) {questionBank[currentIndex].isCheater = value}
 
     fun moveToNext(){
         currentIndex = (currentIndex + 1) % questionBank.size

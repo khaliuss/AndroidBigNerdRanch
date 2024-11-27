@@ -22,7 +22,9 @@ import androidx.lifecycle.ViewModelProviders
 //Third challenge add back button
 //Fourth challenge change button to imageButton
 //Fifth challenge preventing repeat answers
-//sixth challenge graded quiz
+//Sixth challenge graded quiz
+//Seven challenge Closing Loopholes for Cheaters
+//Eight challenge Tracking Cheat Status by Question
 
 private const val TAG = "MainActivity"
 private const val KEY_INDEX = "index"
@@ -111,6 +113,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    //After adding ViewModel and checking cheaters in Question onActivityResult and all concerns it.I left this code on just in case.
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -132,10 +135,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateQuestion(){
         if (answered == quizViewModel.questionBankSize){
             val percent = correct/quizViewModel.questionBankSize.toDouble() * 100
-            val end = Toast.makeText(this,"Right percent: ${percent.toInt()}% $correct",Toast.LENGTH_LONG)
-                end.setGravity(Gravity.TOP,0,0)
-                end.show()
-
+            Toast.makeText(this,"Right percent: ${percent.toInt()}% $correct",Toast.LENGTH_LONG).show()
         }else{
             val questionTextResId = quizViewModel.currentQuestionText
             questionTextView.setText(questionTextResId)
