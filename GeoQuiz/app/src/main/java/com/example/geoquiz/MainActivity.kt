@@ -1,8 +1,11 @@
 package com.example.geoquiz
 
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageButton
@@ -10,6 +13,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 
 //Git Challenges branch
 //First challenge show toast notification on top
@@ -19,23 +24,25 @@ import androidx.appcompat.app.AppCompatActivity
 //Fifth challenge preventing repeat answers
 //sixth challenge graded quiz
 
+private const val TAG = "MainActivity"
+private const val KEY_INDEX = "index"
+private const val REQUEST_CODE_CHEAT = 0
+
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var  trueButton: Button
+    private lateinit var trueButton: Button
     private lateinit var falseButton: Button
+    private lateinit var cheatButton: Button
     private lateinit var nextButton: ImageButton
     private lateinit var prevButton: ImageButton
     private lateinit var questionTextView: TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia,true,false),
-        Question(R.string.question_oceans,true,false),
-        Question(R.string.question_mideast,false,false),
-        Question(R.string.question_africa,false,false),
-        Question(R.string.question_america,true,false),
-        Question(R.string.question_asia,true,false))
+    private val quizViewModel:QuizViewModel by lazy {
+        ViewModelProviders.of(this).get(QuizViewModel::class.java)
+    }
 
-    private var currentIndex = 0
+
+
     private var answered = 0
     private var correct = 0
 
@@ -44,68 +51,93 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG,"OnCreate() called")
         setContentView(R.layout.activity_main)
+        val currentIndex = savedInstanceState?.getInt(KEY_INDEX,0) ?: 0
+        quizViewModel.currentIndex = currentIndex
 
         trueButton = findViewById(R.id.true_button)
         falseButton = findViewById(R.id.false_button)
+        cheatButton = findViewById(R.id.cheat_button)
         nextButton = findViewById(R.id.next_button)
         prevButton = findViewById(R.id.prev_button)
         questionTextView = findViewById(R.id.question_text_view)
 
 
+
         trueButton.setOnClickListener {
 
-            if(!questionBank[currentIndex].isAnswered){
+            if(!quizViewModel.isAnswered){
                 checkAnswer(true)
             }
 
-            isAnswered(questionBank[currentIndex].isAnswered)
+            isAnswered(quizViewModel.isAnswered)
 
 
         }
 
         falseButton.setOnClickListener {
-            if(!questionBank[currentIndex].isAnswered){
+            if(!quizViewModel.isAnswered){
                 checkAnswer(false)
             }
 
-            isAnswered(questionBank[currentIndex].isAnswered)
+            isAnswered(quizViewModel.isAnswered)
 
 
+        }
+
+        cheatButton.setOnClickListener {
+            val intent = CheatActivity.newIntent(this,quizViewModel.currentQuestionAnswer)
+            startActivityForResult(intent, REQUEST_CODE_CHEAT)
         }
 
         nextButton.setOnClickListener {
-            currentIndex = (currentIndex+1) % questionBank.size
-            isAnswered(questionBank[currentIndex].isAnswered)
+            quizViewModel.moveToNext()
+            isAnswered(quizViewModel.isAnswered)
             updateQuestion()
         }
         prevButton.setOnClickListener {
-            currentIndex = if (currentIndex == 0){
-                 questionBank.size-1
-            }else{
-                currentIndex-1
-            }
-            isAnswered(questionBank[currentIndex].isAnswered)
+            quizViewModel.moveToBack()
+            isAnswered(quizViewModel.isAnswered)
             updateQuestion()
         }
 
         questionTextView.setOnClickListener{
-            currentIndex = (currentIndex+1) % questionBank.size
+            quizViewModel.moveToNext()
             updateQuestion()
         }
 
         updateQuestion()
     }
 
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode != Activity.RESULT_OK){
+            return
+        }
+
+        if (requestCode == REQUEST_CODE_CHEAT){
+            quizViewModel.isCheated = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN,false) ?: false
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d(TAG,"onSaveInstantState")
+        outState.putInt(KEY_INDEX,quizViewModel.currentIndex)
+    }
+
     private fun updateQuestion(){
-        if (answered == questionBank.size){
-            val percent = correct/questionBank.size.toDouble() * 100
+        if (answered == quizViewModel.questionBankSize){
+            val percent = correct/quizViewModel.questionBankSize.toDouble() * 100
             val end = Toast.makeText(this,"Right percent: ${percent.toInt()}% $correct",Toast.LENGTH_LONG)
                 end.setGravity(Gravity.TOP,0,0)
                 end.show()
 
         }else{
-            val questionTextResId = questionBank[currentIndex].textResId
+            val questionTextResId = quizViewModel.currentQuestionText
             questionTextView.setText(questionTextResId)
         }
 
@@ -113,16 +145,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(userAnswer:Boolean){
         ++answered
-        questionBank[currentIndex].isAnswered=true
-        val correctAnswer = questionBank[currentIndex].answer
-        var messageResId =0
+        quizViewModel.isAnswered=true
+        val correctAnswer = quizViewModel.currentQuestionAnswer
+        var messageResId = 0
 
-        if (userAnswer == correctAnswer){
-            messageResId = R.string.correct_toast
-            correct++
-        }else{
-            messageResId = R.string.incorrect_toast
+         if (quizViewModel.isCheated){
+              messageResId = R.string.judgment_toast
+         }else if (userAnswer == correctAnswer){
+             messageResId = R.string.correct_toast
+             correct++
+         }else{
+             messageResId = R.string.incorrect_toast
         }
+
 
         Toast.makeText(this,messageResId,Toast.LENGTH_SHORT).show()
 
@@ -141,8 +176,8 @@ class MainActivity : AppCompatActivity() {
             falseButton.isClickable = true
             trueButton.isClickable = true
 
-            falseButton.setBackgroundColor(getColor(com.google.android.material.R.color.design_default_color_primary))
-            trueButton.setBackgroundColor(getColor(com.google.android.material.R.color.design_default_color_primary))
+            falseButton.setBackgroundColor(getColor(R.color.prim))
+            trueButton.setBackgroundColor(getColor(R.color.prim))
         }
     }
 
